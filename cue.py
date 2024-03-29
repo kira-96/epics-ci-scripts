@@ -1039,6 +1039,8 @@ def prepare_linux_cross(epics_arch, gnu_arch):
             gnu_arch = "powerpc-linux-gnu"
         elif epics_arch == "linux-ppc64":
             gnu_arch = "powerpc64le-linux-gnu"
+        elif epics_arch == "linux-loong64":
+            gnu_arch = "loongarch64-linux-gnu"
         else:
             raise ValueError(
                 "Could not guess the GNU architecture for EPICS arch: {}. "
@@ -1247,10 +1249,19 @@ endif''')
         fold_end('install.choco', 'Installing CHOCO packages')
 
     if ci['os'] == 'linux' and ci['apt']:
-        fold_start('install.apt', 'Installing APT packages')
-        sp.check_call(ci['sudo'] + ['apt-get', '-y', 'update'])
-        sp.check_call(ci['sudo'] + ['apt-get', 'install', '-y', '-qq'] + ci['apt'])
-        fold_end('install.apt', 'Installing APT packages')
+        if os.environ["CI_CROSS_TARGETS"] == "linux-loong64":
+            fold_start('install.toolchain', "Installing cross compile toolchain")
+            toolchain = 'loongson-gnu-toolchain-8.3-x86_64-loongarch64-linux-gnu-rc1.2'
+            sp.check_call(['wget', 'http://ftp.loongnix.cn/toolchain/gcc/release/loongarch/gcc8/' + toolchain + '.tar.xz'])
+            sp.check_call(ci['sudo'] + ['tar', '-xvf', toolchain + '.tar.xz', '-C', '/opt/'])
+            for tool in os.listdir('/opt/' + toolchain + '/bin'):
+                sp.check_call(ci['sudo'] + ['ln', '-s', '/opt/' + toolchain + '/bin/' + tool, '/usr/bin/' + tool])
+            fold_end('install.toolchain', "Installing cross compile toolchain")
+        else:
+            fold_start('install.apt', 'Installing APT packages')
+            sp.check_call(ci['sudo'] + ['apt-get', '-y', 'update'])
+            sp.check_call(ci['sudo'] + ['apt-get', 'install', '-y', '-qq'] + ci['apt'])
+            fold_end('install.apt', 'Installing APT packages')
 
     if ci['os'] == 'osx' and ci['homebrew']:
         fold_start('install.homebrew', 'Installing Homebrew packages')
