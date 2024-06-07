@@ -1251,7 +1251,7 @@ endif''')
     if ci['os'] == 'linux' and ci['apt']:
         if os.environ["CI_CROSS_TARGETS"] == "linux-loong64":
             fold_start('install.toolchain', "Installing cross compile toolchain")
-            toolchain = 'loongson-gnu-toolchain-8.3-x86_64-loongarch64-linux-gnu-rc1.2'
+            toolchain = 'loongson-gnu-toolchain-8.3-x86_64-loongarch64-linux-gnu-rc1.3-1'
             sp.check_call(['wget', 'http://ftp.loongnix.cn/toolchain/gcc/release/loongarch/gcc8/' + toolchain + '.tar.xz'])
             sp.check_call(ci['sudo'] + ['tar', '-xvf', toolchain + '.tar.xz', '-C', '/opt/'])
             for tool in os.listdir('/opt/' + toolchain + '/bin'):
